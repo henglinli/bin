@@ -1,0 +1,63 @@
+#!/bin/sh
+#
+src_version="5.0.0"
+src_local_dir=/usr/portage/distfiles
+src_build_root=/tmp/build_clang
+src_list="llvm cfe clang-tools-extra compiler-rt libcxx libcxxabi libunwind lld"
+#src_url="http://releases.llvm.org/$src_version"
+src_url="http://mirrors.163.com/gentoo/distfiles"
+#
+echo "get src:"
+for src in $src_list; do
+    pkg=$src-$src_version.src.tar.xz
+    echo "wget $src_url/$pkg"
+    if [ -e $src_local_dir/$pkg ]; then
+        echo "wget done"
+    else
+        echo "wget failed: $pkg"
+    fi
+done
+echo "prepare src:"
+mkdir -v -p $src_build_root
+cd $src_build_root
+tar xf $src_local_dir/llvm-$src_version.src.tar.xz
+mv llvm-$src_version.src llvm
+cd llvm/tools
+tar xf $src_local_dir/cfe-$src_version.src.tar.xz
+mv cfe-$src_version.src clang
+tar xf $src_local_dir/lld-$src_version.src.tar.xz
+mv lld-$src_version.src lld
+#
+cd ../projects
+projects="libcxx libunwind libcxxabi compiler-rt"
+for project in $projects; do
+    tar xf $src_local_dir/$project-$src_version.src.tar.xz
+    mv $project-$src_version.src $project
+done
+cd ../..
+#
+if [ -e Release ]; then
+    rm -rf Release
+fi
+cxxabi_include=$src_build_root/llvm-$src_version.src/projects/libcxxabi/include
+cxxabi_lib=$src_build_root/Release/lib64
+#-DLIBCXX_CXX_ABI_INCLUDE_PATHS=$cxxabi_include
+#-DLIBCXX_CXX_ABI_LIBRARY_PATH=$cxxabi_lib
+mkdir -p Release && cd Release
+echo cmake -DCMAKE_BUILD_TYPE=MinSizeRel \
+      -DCMAKE_INSTALL_PREFIX=/usr/local/llvm \
+      -DLLVM_TARGETS_TO_BUILD="X86" \
+      -DLLVM_HOST_TRIPLE="x86_64-pc-linux-gnu" \
+      -DLLVM_ENABLE_ZLIB=OFF \
+      -DLLVM_BUILD_LLVM_DYLIB=ON \
+      -DLLVM_LINK_LLVM_DYLIB=ON \
+      -DLLVM_LIBDIR_SUFFIX=64 \
+      -DCLANG_DEFAULT_CXX_STDLIB=libc++ \
+      -DCLANG_DEFAULT_RTLIB=compiler-rt \
+      -DLIBUNWIND_USE_COMPILER_RT=ON \
+      -DLIBCXXABI_USE_LLVM_UNWINDER=ON \
+      -DLIBCXXABI_USE_COMPILER_RT=ON \
+      -DLIBCXX_LIBDIR_SUFFIX=64 \
+      -DLIBCXX_USE_COMPILER_RT=ON \
+      -DLIBCXX_CXX_ABI=libcxxabi \
+      ../llvm -G Ninja
