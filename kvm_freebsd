@@ -1,0 +1,13 @@
+#!/bin/sh
+#-*- coding:utf-8-unix -*-
+qemu-system-x86_64 \
+    -enable-kvm \
+    -cpu host \
+    -m 1G \
+    -device virtio-net-pci,netdev=vmnic \
+    -netdev user,id=vmnic,hostname=freebsd,hostfwd=tcp::9222-:22 \
+    -vga std \
+    -drive file=${HOME}/vms/FreeBSD-11.1-RELEASE-amd64.qcow2,if=virtio \
+    -display curses \
+    $@
+

@@ -1,0 +1,12 @@
+#!/bin/sh
+#-*- coding:utf-8-unix -*-
+qemu-system-x86_64 \
+    -enable-kvm \
+    -cpu host \
+    -device virtio-net-pci,netdev=vmnic \
+    -netdev user,id=vmnic,hostname=osv,hostfwd=tcp::8222-:22 \
+    -vga std \
+    -drive file=${HOME}/vms/osv-v0.24.qemu.qcow2,if=virtio \
+    -display curses \
+    $@
+

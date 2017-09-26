@@ -1,0 +1,1 @@
+./configure --enable-static-tor --with-libevent-dir=/usr --with-openssl-dir=/usr --with-zlib-dir=/usr --disable-seccomp --disable-lzma --disable-rust --disable-systemd --disable-zstd --disable-libscrypt --disable-asciidoc --disable-unittests --enable-local-appdata --disable-event-tracing-debug
