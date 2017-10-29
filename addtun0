@@ -1,0 +1,6 @@
+#!/bin/sh
+#-*-coding:utf-8-unix;-*-
+ME=`whoami`
+sudo ip tuntap add mode tun user ${ME} name tun0
+sudo ip link set tun0 up
+sudo ip addr add 192.168.206.100/24 dev tun0
